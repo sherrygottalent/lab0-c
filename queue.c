@@ -75,12 +75,14 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     if ((head == NULL) || list_empty(head))
         return NULL;
 
-    element_t *rm_node = list_entry(head, element_t, list);
-    if (sp != NULL)
-        strncpy(sp, rm_node->value, bufsize);
+    element_t *rm_ele = list_first_entry(head, element_t, list);
+    list_del(&rm_ele->list);
 
-    list_del(&rm_node->list);
-    return rm_node;
+    if (sp != NULL) {
+        strncpy(sp, rm_ele->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
+    return rm_ele;
 }
 
 /* Remove an element from tail of queue */
