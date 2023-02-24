@@ -50,7 +50,7 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
-    if ((head == NULL) | list_empty(head))
+    if ((head == NULL) || list_empty(head))
         return false;
 
     element_t *node = malloc(sizeof(element_t));
@@ -72,7 +72,7 @@ bool q_insert_tail(struct list_head *head, char *s)
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    if ((head == NULL) | list_empty(head))
+    if ((head == NULL) || list_empty(head))
         return NULL;
 
     element_t *rm_node = list_entry(head, element_t, list);
