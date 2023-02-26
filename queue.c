@@ -77,12 +77,36 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 
     element_t *rm_ele = list_first_entry(head, element_t, list);
     list_del(&rm_ele->list);
-
-    if (sp != NULL) {
+    /*
+    printf("rm_ele = %p\n", rm_ele);
+    element_t *tmp_next = list_entry(rm_ele->list.next , element_t, list);
+    printf("list_entry(rm_ele->list.next, ) = %s\n", tmp_next->value);
+    */
+    /*
+    rm_ele->list.prev = NULL;
+    rm_ele->list.next = NULL;
+    */
+    if ((sp != NULL) && (sp[0] == '\0')) {
         strncpy(sp, rm_ele->value, bufsize - 1);
         sp[bufsize - 1] = '\0';
     }
+    /*
+    printf("89\n");
+    printf("rm_ele = %p\n", rm_ele);
+    LIST_HEAD(node_head);
+    INIT_LIST_HEAD(&node_head);
+    printf("node_head = %p\n", &node_head);
+    node_head.prev = &rm_ele->list;
+    node_head.next = &rm_ele->list;
+
+    printf("&rm_ele->list = %p\n", &rm_ele->list);
+    */
+    return NULL;
+    /*
+    if (!rm_ele)
+        return NULL;
     return rm_ele;
+    */
 }
 
 /* Remove an element from tail of queue */
