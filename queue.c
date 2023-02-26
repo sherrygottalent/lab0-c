@@ -126,9 +126,9 @@ bool q_delete_mid(struct list_head *head)
         if (idx == mid) {
             ele->list.prev->next = ele->list.next;
             ele->list.next->prev = ele->list.prev;
+            free(ele);
             break;
         }
-        free(ele);
         idx++;
     }
     return true;
