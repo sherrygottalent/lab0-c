@@ -34,7 +34,15 @@ bool q_insert_head(struct list_head *head, char *s)
     element_t *node = malloc(sizeof(element_t));
     if (node == NULL)
         return false;
-    node->value = strndup(s, strlen(s));
+
+    // Allocate space and copy the string into value
+    size_t size = strlen(s) + 1;
+    char *val = malloc(sizeof(char) * size);
+    for (int i = 0; i < size - 1; i++) {
+        *(val + i) = s[i];
+    }
+    val[size - 1] = '\0';
+    node->value = val;
 
     struct list_head *next = head->next;
     next->prev = &node->list;
@@ -56,7 +64,15 @@ bool q_insert_tail(struct list_head *head, char *s)
     element_t *node = malloc(sizeof(element_t));
     if (node == NULL)
         return false;
-    node->value = strndup(s, strlen(s));
+
+    // Allocate space and copy the string into value
+    size_t size = strlen(s) + 1;
+    char *val = malloc(sizeof(char) * size);
+    for (int i = 0; i < size - 1; i++) {
+        *(val + i) = s[i];
+    }
+    val[size - 1] = '\0';
+    node->value = val;
 
     struct list_head *prev = head->prev;
     prev->next = &node->list;
