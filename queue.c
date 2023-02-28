@@ -164,26 +164,16 @@ bool q_delete_dup(struct list_head *head)
     struct list_head *itr, *itr_safe;
     list_for_each_safe (itr, itr_safe, head) {
         element_t *itr_ele = list_entry(itr, element_t, list);
-        struct list_head *ptr = itr->next;
+        struct list_head *ptr = itr->next, *last_ptr;
         bool is_dup = false;
 
         while (ptr != head) {
             if (strcmp(itr_ele->value,
                        list_entry(ptr, element_t, list)->value) == 0) {
-                element_t *next_ele = list_entry(ptr->next, element_t, list);
-                if (ptr == itr->next) {
-                    // adjacent node
-                    itr->prev->next = ptr->next;
-                    ptr->next->prev = ptr->prev;
-                } else {
-                    itr->prev->next = itr->next;
-                    itr->next->prev = itr->prev;
-                    ptr->prev->next = ptr->next;
-                    ptr->next->prev = ptr->prev;
-                }
+                last_ptr = ptr;
                 list_del(ptr);
                 q_release_element(list_entry(ptr, element_t, list));
-                ptr = &next_ele->list;
+                ptr = last_ptr->next;
                 is_dup = true;
                 continue;
             }
