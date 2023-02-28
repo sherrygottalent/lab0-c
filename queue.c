@@ -253,10 +253,109 @@ void q_reverse(struct list_head *head)
 void q_reverseK(struct list_head *head, int k)
 {
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+    if (k <= 1 || k > q_size(head))
+        return;
+    /*
+    struct list_head *curr = head->next, *last = head;
+    struct list_head *grp_start = NULL;
+    struct list_head *grp_end = NULL;
+    int cnt = 0;
+    while (curr != head) {
+        printf("[%s]\n", list_entry(curr, element_t, list)->value);
+        if (cnt%k == 0) {
+            if (cnt/k != 0) {
+                // reverse last k element
+
+                struct list_head *local_curr = grp_start;//, *itr_curr =
+    grp_start;
+                //struct list_head *end = grp_end;//, *itr_curr = grp_start;
+                while (local_curr != grp_end){//} && grp_end != grp_start) {
+                    struct list_head *tmp = local_curr;
+                    local_curr->prev = tmp->next;
+                    local_curr->next = tmp->prev;
+
+                    //struct list_head *tmp = local_curr->next->next;
+                    //local_curr->next = local_curr->prev;
+                    //local_curr->next->next = local_curr;
+                    //local_curr->prev = tmp->prev;
+                    local_curr = local_curr->prev;
+                }
+
+                // update last
+                last = grp_start;
+                printf("296 leave while last_ele = %s\n", list_entry(last,
+    element_t, list)->value); grp_end->next = curr; //curr; printf("289
+    grp_end(%s)->next = curr(%s)\n", list_entry(grp_end, element_t,
+    list)->value, list_entry(curr, element_t, list)->value);
+
+            }
+            grp_start = curr;
+        }
+        else if(cnt%k == k-1){
+            grp_end = curr;
+            last->next = grp_end;
+        }
+
+        curr = curr->next;
+        cnt++;
+    }
+
+    int tmpcnt = 0;
+    while(head->next!=head && tmpcnt<10){
+        printf("%s->", list_entry(head->next, element_t, list)->value);
+        tmpcnt++;
+    }
+    printf("\n\n");
+
+    // update head->prev
+    printf("312 - curr->next(%s), curr->prev(%s)\n",
+                        list_entry(curr->prev, element_t, list)->value,
+                        list_entry(curr->next, element_t, list)->value);
+
+    head->prev = cnt%k == k-1 ? curr->prev : grp_start;
+    curr->next = head;
+    printf("312 - head->prev(%s)\n", list_entry(head->prev, element_t,
+    list)->value); printf("3122 - head->next(%s)\n", list_entry(head->next,
+    element_t, list)->value);
+
+
+    //struct list_head *itr = head->next;
+    //while(itr!=head){
+    //    printf("[%s]", list_entry(itr, element_t, list)->value);
+    //}
+    */
+    return;
 }
 
 /* Sort elements of queue in ascending order */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+    /*
+    struct list_head *itr, sub_itr;
+    element_t *first_ele = list_first_entry(head, element_t, list), *curr_ele;
+
+    struct list_head *min_ptr = head->next;
+    element_t *min_ele = list_entry(min_ptr, element_t, list);
+    // find min
+    list_for_each(itr, head){
+        curr_ele = list_entry(itr, element_t, list);
+        if (curr_ele->value<min_ele->value){
+            min_ptr = itr;
+            min_ele = list_entry(min_ptr, element_t, list);
+        }
+    }
+    // sort
+    itr = head->next;
+    while(itr!=min_ptr){
+
+    }
+    */
+    return;
+}
 
 /* Remove every node which has a node with a strictly greater value anywhere to
  * the right side of it */
@@ -289,6 +388,7 @@ int q_descend(struct list_head *head)
         itr_ele = list_entry(itr, element_t, list);
         len += 1;
     }
+    printf("result len = %d\n", len);
     return ++len;
 }
 
@@ -296,5 +396,8 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
+    if (!head || list_empty(head))
+        return 0;
+
     return 0;
 }
