@@ -145,9 +145,9 @@ bool q_delete_mid(struct list_head *head)
     int idx = 0;
     list_for_each_entry_safe (ele, safe, head, list) {
         if (idx == mid) {
-            ele->list.prev->next = ele->list.next;
-            ele->list.next->prev = ele->list.prev;
-            free(ele);
+            safe = list_entry(ele->list.next, element_t, list);
+            list_del(safe->list.prev);
+            q_release_element(ele);
             break;
         }
         idx++;
