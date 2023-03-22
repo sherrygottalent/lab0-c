@@ -23,16 +23,13 @@ struct list_head *q_new()
 void q_free(struct list_head *l)
 {
     if (!list_empty(l)) {
-        struct list_head *itr, *safe;
-        list_for_each_safe (itr, safe, l) {
-            element_t *itr_ele = list_entry(itr, element_t, list);
-            safe = itr->next;
-
-            q_release_element(itr_ele);
+        struct list_head *node, *safe;
+        list_for_each_safe (node, safe, l) {
+            element_t *entry = list_entry(node, element_t, list);
+            q_release_element(entry);
         }
     }
     free(l);
-    return;
 }
 
 /* Insert an element at head of queue */
