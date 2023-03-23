@@ -308,8 +308,26 @@ void q_sort(struct list_head *head)
         return;
 
     /* bubble sort*/
-
-
+    struct list_head *node;
+    element_t *local_min_element;
+    int n_sorted = 0;
+    int size = q_size(head);
+    while (n_sorted != size) {
+        int i = 0;
+        local_min_element = list_first_entry(head, element_t, list);
+        list_for_each (node, head) {
+            if (i == size - n_sorted)
+                break;
+            element_t *local_element = list_entry(node, element_t, list);
+            local_min_element =
+                atoi(local_element->value) < atoi(local_min_element->value)
+                    ? local_element
+                    : local_min_element;
+            i++;
+        }
+        list_move_tail(&local_min_element->list, head);
+        n_sorted++;
+    }
     return;
 }
 
