@@ -146,32 +146,34 @@ bool q_delete_mid(struct list_head *head)
 /* Delete all nodes that have duplicate string */
 bool q_delete_dup(struct list_head *head)
 {
-    if (!head || list_empty(head))
+    if (head == NULL || list_empty(head) || list_is_singular(head))
         return false;
 
-    struct list_head *itr, *itr_safe;
-    list_for_each_safe (itr, itr_safe, head) {
-        element_t *itr_ele = list_entry(itr, element_t, list);
-        struct list_head *ptr = itr->next, *last_ptr;
-        bool is_dup = false;
+    struct list_head *head_node = head->next, *head_safe;
+    struct list_head *node, *safe;
+    bool isDup = false;
 
-        while (ptr != head) {
-            if (strcmp(itr_ele->value,
-                       list_entry(ptr, element_t, list)->value) == 0) {
-                last_ptr = ptr;
-                list_del(ptr);
-                q_release_element(list_entry(ptr, element_t, list));
-                ptr = last_ptr->next;
-                is_dup = true;
-                continue;
+    while (head_node != head && head_node->next != head) {
+        element_t *head_entry = list_entry(head_node, element_t, list);
+        list_for_each_safe (node, safe, head_node) {
+            safe = node->next;
+            element_t *entry = list_entry(node, element_t, list);
+            if (!strcmp(head_entry->value, entry->value)) {
+                list_del(node);
+                q_release_element(entry);
+                isDup = true;
             }
-            ptr = ptr->next;
+            if (safe == head)
+                break;
         }
-        itr_safe = itr->next;
-        if (is_dup) {
-            list_del(itr);
-            q_release_element(list_entry(itr, element_t, list));
+
+        head_safe = head_node->next;
+        if (isDup) {
+            list_del(head_node);
+            q_release_element(head_entry);
+            isDup = false;
         }
+        head_node = head_safe;
     }
     return true;
 }
@@ -310,28 +312,12 @@ void q_reverseK(struct list_head *head, int k)
 /* Sort elements of queue in ascending order */
 void q_sort(struct list_head *head)
 {
-    if (!head || list_empty(head) || list_is_singular(head))
+    if (head == NULL || list_empty(head) || list_is_singular(head))
         return;
-    /*
-    struct list_head *itr, sub_itr;
-    element_t *first_ele = list_first_entry(head, element_t, list), *curr_ele;
 
-    struct list_head *min_ptr = head->next;
-    element_t *min_ele = list_entry(min_ptr, element_t, list);
-    // find min
-    list_for_each(itr, head){
-        curr_ele = list_entry(itr, element_t, list);
-        if (curr_ele->value<min_ele->value){
-            min_ptr = itr;
-            min_ele = list_entry(min_ptr, element_t, list);
-        }
-    }
-    // sort
-    itr = head->next;
-    while(itr!=min_ptr){
+    /* bubble sort*/
 
-    }
-    */
+
     return;
 }
 
