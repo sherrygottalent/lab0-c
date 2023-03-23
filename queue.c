@@ -33,18 +33,26 @@ void q_free(struct list_head *l)
     return;
 }
 
+element_t *element_new(const char *s)
+{
+    element_t *entry = malloc(sizeof(element_t));
+    if (entry == NULL)
+        return NULL;
+    size_t buflen = strlen(s) + 1;
+    entry->value = malloc(sizeof(char) * buflen);
+    strncpy(entry->value, s, buflen);
+    return entry;
+}
+
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
     if (head == NULL)
         return false;
 
-    q element_t *entry = malloc(sizeof(element_t));
+    element_t *entry = element_new(s);
     if (entry == NULL)
         return false;
-    size_t buflen = strlen(s) + 1;
-    entry->value = malloc(sizeof(char) * buflen);
-    strncpy(entry->value, s, buflen);
 
     list_add(&entry->list, head);
     if (list_empty(head))
@@ -58,25 +66,11 @@ bool q_insert_tail(struct list_head *head, char *s)
     if ((head == NULL) || list_empty(head))
         return false;
 
-    element_t *node = malloc(sizeof(element_t));
-    if (node == NULL)
+    element_t *entry = element_new(s);
+    if (entry == NULL)
         return false;
 
-    // Allocate space and copy the string into value
-    size_t size = strlen(s) + 1;
-    char *val = malloc(sizeof(char) * size);
-    for (int i = 0; i < size - 1; i++) {
-        *(val + i) = s[i];
-    }
-    val[size - 1] = '\0';
-    node->value = val;
-
-    struct list_head *prev = head->prev;
-    prev->next = &node->list;
-    node->list.next = head;
-    node->list.prev = prev;
-    head->prev = &(node->list);
-
+    list_add_tail(&entry->list, head);
     if (list_empty(head))
         return false;
     return true;
