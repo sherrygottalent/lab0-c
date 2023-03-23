@@ -30,12 +30,26 @@ void q_free(struct list_head *l)
         }
     }
     free(l);
+    return;
 }
 
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
-    return false;
+    if (head == NULL)
+        return false;
+
+    q element_t *entry = malloc(sizeof(element_t));
+    if (entry == NULL)
+        return false;
+    size_t buflen = strlen(s) + 1;
+    entry->value = malloc(sizeof(char) * buflen);
+    strncpy(entry->value, s, buflen);
+
+    list_add(&entry->list, head);
+    if (list_empty(head))
+        return false;
+    return true;
 }
 
 /* Insert an element at tail of queue */
