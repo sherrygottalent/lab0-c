@@ -79,50 +79,49 @@ bool q_insert_tail(struct list_head *head, char *s)
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    if ((head == NULL) || list_empty(head))
+    if (head == NULL || list_empty(head))
         return NULL;
 
-    element_t *rm_ele = list_first_entry(head, element_t, list);
-    head->next = rm_ele->list.next;
-    list_entry(rm_ele->list.next, element_t, list)->list.prev =
-        rm_ele->list.prev;
-    list_del(&rm_ele->list);
-
-    if ((sp != NULL) && (sp[0] == '\0')) {
-        strncpy(sp, rm_ele->value, bufsize - 1);
+    element_t *entry = list_first_entry(head, element_t, list);
+    list_del(&entry->list);
+    if (sp != NULL) {
+        strncpy(sp, entry->value, bufsize - 1);
         sp[bufsize - 1] = '\0';
     }
-    return rm_ele;
+
+    return entry;
 }
 
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    if ((head == NULL) || list_empty(head))
+    if (head == NULL || list_empty(head))
         return NULL;
 
-    element_t *rm_ele = list_last_entry(head, element_t, list);
-    head->prev = rm_ele->list.prev;
-    list_entry(rm_ele->list.prev, element_t, list)->list.next = head;
-    list_del(&(rm_ele->list));
+    element_t *entry = list_last_entry(head, element_t, list);
+    list_del(&entry->list);
+    if (sp != NULL) {
+        strncpy(sp, entry->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
 
-    if (sp != NULL)
-        strncpy(sp, rm_ele->value, bufsize);
-    return rm_ele;
+    return entry;
 }
 
 /* Return number of elements in queue */
 int q_size(struct list_head *head)
 {
-    if (!head)
+    int size = 0;
+    if (head == NULL || list_empty(head))
         return 0;
-
-    int len = 0;
-    struct list_head *li;
-
-    list_for_each (li, head)
-        len++;
-    return len;
+    else if (list_is_singular(head))
+        return 1;
+    else {
+        struct list_head *node;
+        list_for_each (node, head)
+            size++;
+    }
+    return size;
 }
 
 /* Delete the middle node in queue */
