@@ -205,14 +205,18 @@ void q_swap(struct list_head *head)
 /* Reverse elements in queue */
 void q_reverse(struct list_head *head)
 {
+    if (head == NULL || list_empty(head) || list_is_singular(head))
+        return;
+
     struct list_head *tmp = head->next;
     head->next = head->prev;
     head->prev = tmp;
-    struct list_head *itr;
-    list_for_each (itr, head) {
-        tmp = itr->next;
-        itr->next = itr->prev;
-        itr->prev = tmp;
+
+    struct list_head *node;
+    list_for_each (node, head) {
+        tmp = node->next;
+        node->next = node->prev;
+        node->prev = tmp;
     }
     return;
 }
