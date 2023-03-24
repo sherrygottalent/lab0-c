@@ -307,7 +307,7 @@ void q_sort(struct list_head *head)
     if (head == NULL || list_empty(head) || list_is_singular(head))
         return;
 
-    // Selection Sort
+    /* Selection Sort */
     struct list_head *node;
     element_t *local_min_element;
     int n_sorted = 0;
@@ -335,35 +335,29 @@ void q_sort(struct list_head *head)
  * the right side of it */
 int q_descend(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    if (!head || list_empty(head))
-        return 0;
-    if (q_size(head) == 1)
-        return 1;
+    if (!head || list_empty(head) || list_is_singular(head))
+        return q_size(head);
 
-    int len = 0;
-    struct list_head *itr = head->prev;
-    element_t *itr_ele = list_last_entry(head, element_t, list);
-    while (itr != head && itr->prev != head) {
-        element_t *prev_ele = list_entry(itr->prev, element_t, list);
-        while (atoi(prev_ele->value) < atoi(itr_ele->value)) {
-            // remove node
-            list_del(itr->prev);
-
-            itr_ele = list_entry(itr, element_t, list);
-            if (itr->prev == head) {
+    struct list_head *node, *safe;
+    list_for_each_safe (node, safe, head) {
+        safe = node->next;
+        element_t *entry = list_entry(node, element_t, list);
+        bool hasGreater = false;
+        struct list_head *tail_node = head->prev;
+        while (tail_node != node) {
+            element_t *tail_entry = list_entry(tail_node, element_t, list);
+            if (strcmp(tail_entry->value, entry->value)) {
+                hasGreater = true;
                 break;
             }
-            prev_ele = list_entry(itr->prev, element_t, list);
+            tail_node = tail_node->prev;
         }
-        itr = itr->prev;
-        if (itr == head)
-            break;
-        itr_ele = list_entry(itr, element_t, list);
-        len += 1;
+        if (hasGreater) {
+            list_del(node);
+            q_release_element(entry);
+        }
     }
-    printf("result len = %d\n", len);
-    return ++len;
+    return q_size(head);
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending order */
