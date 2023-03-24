@@ -307,7 +307,7 @@ void q_sort(struct list_head *head)
     if (head == NULL || list_empty(head) || list_is_singular(head))
         return;
 
-    /* bubble sort*/
+    // Selection Sort
     struct list_head *node;
     element_t *local_min_element;
     int n_sorted = 0;
@@ -320,7 +320,7 @@ void q_sort(struct list_head *head)
                 break;
             element_t *local_element = list_entry(node, element_t, list);
             local_min_element =
-                atoi(local_element->value) < atoi(local_min_element->value)
+                strcmp(local_element->value, local_min_element->value) <= 0
                     ? local_element
                     : local_min_element;
             i++;
