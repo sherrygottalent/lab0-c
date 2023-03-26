@@ -85,7 +85,8 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     element_t *entry = list_first_entry(head, element_t, list);
     list_del(&entry->list);
     if (sp != NULL) {
-        strncpy(sp, entry->value, bufsize);
+        strncpy(sp, entry->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
     }
 
     return entry;
@@ -100,7 +101,8 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
     element_t *entry = list_last_entry(head, element_t, list);
     list_del(&entry->list);
     if (sp != NULL) {
-        strncpy(sp, entry->value, bufsize);
+        strncpy(sp, entry->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
     }
 
     return entry;
@@ -125,20 +127,18 @@ int q_size(struct list_head *head)
 /* Delete the middle node in queue */
 bool q_delete_mid(struct list_head *head)
 {
-    if (!head || list_empty(head))
+    if (head == NULL || list_empty(head))
         return false;
 
-    int mid = q_size(head) / 2;
-    element_t *ele, *safe;
-    int idx = 0;
-    list_for_each_entry_safe (ele, safe, head, list) {
-        if (idx == mid) {
-            safe = list_entry(ele->list.next, element_t, list);
-            list_del(safe->list.prev);
-            q_release_element(ele);
+    int mid = (q_size(head) + 1) / 2;
+    struct list_head *node;
+    list_for_each (node, head) {
+        if (--mid == 0) {
+            element_t *del_entry = list_entry(node, element_t, list);
+            list_del(node);
+            q_release_element(del_entry);
             break;
         }
-        idx++;
     }
     return true;
 }
@@ -146,32 +146,34 @@ bool q_delete_mid(struct list_head *head)
 /* Delete all nodes that have duplicate string */
 bool q_delete_dup(struct list_head *head)
 {
-    if (!head || list_empty(head))
+    if (head == NULL || list_empty(head) || list_is_singular(head))
         return false;
 
-    struct list_head *itr, *itr_safe;
-    list_for_each_safe (itr, itr_safe, head) {
-        element_t *itr_ele = list_entry(itr, element_t, list);
-        struct list_head *ptr = itr->next, *last_ptr;
-        bool is_dup = false;
+    struct list_head *head_node = head->next, *head_safe;
+    struct list_head *node, *safe;
+    bool isDup = false;
 
-        while (ptr != head) {
-            if (strcmp(itr_ele->value,
-                       list_entry(ptr, element_t, list)->value) == 0) {
-                last_ptr = ptr;
-                list_del(ptr);
-                q_release_element(list_entry(ptr, element_t, list));
-                ptr = last_ptr->next;
-                is_dup = true;
-                continue;
+    while (head_node != head && head_node->next != head) {
+        element_t *head_entry = list_entry(head_node, element_t, list);
+        list_for_each_safe (node, safe, head_node) {
+            safe = node->next;
+            element_t *entry = list_entry(node, element_t, list);
+            if (!strcmp(head_entry->value, entry->value)) {
+                list_del(node);
+                q_release_element(entry);
+                isDup = true;
             }
-            ptr = ptr->next;
+            if (safe == head)
+                break;
         }
-        itr_safe = itr->next;
-        if (is_dup) {
-            list_del(itr);
-            q_release_element(list_entry(itr, element_t, list));
+
+        head_safe = head_node->next;
+        if (isDup) {
+            list_del(head_node);
+            q_release_element(head_entry);
+            isDup = false;
         }
+        head_node = head_safe;
     }
     return true;
 }
@@ -179,50 +181,42 @@ bool q_delete_dup(struct list_head *head)
 /* Swap every two adjacent nodes */
 void q_swap(struct list_head *head)
 {
-    // https://leetcode.com/problems/swap-nodes-in-pairs/
-    if (!head || list_empty(head))
+    if (head == NULL || list_empty(head) || list_is_singular(head))
         return;
 
-    struct list_head *curr = head->next, *last = head;
-    while (curr) {
-        struct list_head *tmp = NULL;
-        last->next = curr->next;
-        curr->prev = last->next;
-        if (last->next->next) {
-            tmp = last->next->next;
-        }
-        last->next->next = curr;
-        last->next->prev = last;
+    struct list_head *node = head->next, *next_node = head->next->next;
+    while (node != head && next_node != head) {
+        struct list_head *_prev = node->prev;
+        struct list_head *_next = next_node->next;
+        _prev->next = next_node;
+        next_node->next = node;
+        next_node->prev = _prev;
+        node->next = _next;
+        node->prev = next_node;
+        _next->prev = node;
 
-        last = curr;
-        if (tmp == head) {
-            head->prev = last;
-            last->next = head;
-            break;
-        }
-        curr = tmp;
-        if (curr->next == head) {
-            last->next = curr;
-            curr->prev = last;
-            curr->next = head;
-            head->prev = curr;
-            break;
-        }
+        node = _next;
+        next_node = _next->next;
     }
+
     return;
 }
 
 /* Reverse elements in queue */
 void q_reverse(struct list_head *head)
 {
+    if (head == NULL || list_empty(head) || list_is_singular(head))
+        return;
+
     struct list_head *tmp = head->next;
     head->next = head->prev;
     head->prev = tmp;
-    struct list_head *itr;
-    list_for_each (itr, head) {
-        tmp = itr->next;
-        itr->next = itr->prev;
-        itr->prev = tmp;
+
+    struct list_head *node;
+    list_for_each (node, head) {
+        tmp = node->next;
+        node->next = node->prev;
+        node->prev = tmp;
     }
     return;
 }
@@ -310,28 +304,30 @@ void q_reverseK(struct list_head *head, int k)
 /* Sort elements of queue in ascending order */
 void q_sort(struct list_head *head)
 {
-    if (!head || list_empty(head) || list_is_singular(head))
+    if (head == NULL || list_empty(head) || list_is_singular(head))
         return;
-    /*
-    struct list_head *itr, sub_itr;
-    element_t *first_ele = list_first_entry(head, element_t, list), *curr_ele;
 
-    struct list_head *min_ptr = head->next;
-    element_t *min_ele = list_entry(min_ptr, element_t, list);
-    // find min
-    list_for_each(itr, head){
-        curr_ele = list_entry(itr, element_t, list);
-        if (curr_ele->value<min_ele->value){
-            min_ptr = itr;
-            min_ele = list_entry(min_ptr, element_t, list);
+    /* Selection Sort */
+    struct list_head *node;
+    element_t *local_min_element;
+    int n_sorted = 0;
+    int size = q_size(head);
+    while (n_sorted != size) {
+        int i = 0;
+        local_min_element = list_first_entry(head, element_t, list);
+        list_for_each (node, head) {
+            if (i == size - n_sorted)
+                break;
+            element_t *local_element = list_entry(node, element_t, list);
+            local_min_element =
+                strcmp(local_element->value, local_min_element->value) <= 0
+                    ? local_element
+                    : local_min_element;
+            i++;
         }
+        list_move_tail(&local_min_element->list, head);
+        n_sorted++;
     }
-    // sort
-    itr = head->next;
-    while(itr!=min_ptr){
-
-    }
-    */
     return;
 }
 
@@ -339,35 +335,29 @@ void q_sort(struct list_head *head)
  * the right side of it */
 int q_descend(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    if (!head || list_empty(head))
-        return 0;
-    if (q_size(head) == 1)
-        return 1;
+    if (!head || list_empty(head) || list_is_singular(head))
+        return q_size(head);
 
-    int len = 0;
-    struct list_head *itr = head->prev;
-    element_t *itr_ele = list_last_entry(head, element_t, list);
-    while (itr != head && itr->prev != head) {
-        element_t *prev_ele = list_entry(itr->prev, element_t, list);
-        while (atoi(prev_ele->value) < atoi(itr_ele->value)) {
-            // remove node
-            list_del(itr->prev);
-
-            itr_ele = list_entry(itr, element_t, list);
-            if (itr->prev == head) {
+    struct list_head *node, *safe;
+    list_for_each_safe (node, safe, head) {
+        safe = node->next;
+        element_t *entry = list_entry(node, element_t, list);
+        bool hasGreater = false;
+        struct list_head *tail_node = head->prev;
+        while (tail_node != node) {
+            element_t *tail_entry = list_entry(tail_node, element_t, list);
+            if (strcmp(tail_entry->value, entry->value)) {
+                hasGreater = true;
                 break;
             }
-            prev_ele = list_entry(itr->prev, element_t, list);
+            tail_node = tail_node->prev;
         }
-        itr = itr->prev;
-        if (itr == head)
-            break;
-        itr_ele = list_entry(itr, element_t, list);
-        len += 1;
+        if (hasGreater) {
+            list_del(node);
+            q_release_element(entry);
+        }
     }
-    printf("result len = %d\n", len);
-    return ++len;
+    return q_size(head);
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending order */
