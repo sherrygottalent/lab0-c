@@ -360,12 +360,102 @@ int q_descend(struct list_head *head)
     return q_size(head);
 }
 
+void show_list(struct list_head *head)
+{
+    printf("show_list:\n");
+    struct list_head *node;
+    list_for_each (node, head) {
+        element_t *entry = list_entry(node, element_t, list);
+        printf("\t%s\n", entry->value);
+    }
+}
+void show_chain(struct list_head *head)
+{
+    printf("show_chain:\n");
+    struct list_head *chain_node;
+    list_for_each (chain_node, head) {
+        queue_contex_t *context = list_entry(chain_node, queue_contex_t, chain);
+        printf("context-> size = %d, context->id = %d\n", context->size,
+               context->id);
+        struct list_head *node;
+        list_for_each (node, context->q) {
+            element_t *entry = list_entry(node, element_t, list);
+            printf("\t%s\n", entry->value);
+        }
+    }
+}
+
 /* Merge all the queues into one sorted queue, which is in ascending order */
 int q_merge(struct list_head *head)
 {
-    // https://leetcode.com/problems/merge-k-sorted-lists/
     if (!head || list_empty(head))
         return 0;
 
-    return 0;
+    queue_contex_t *target_context =
+        list_first_entry(head, queue_contex_t, chain);
+    if (list_is_singular(head))
+        return q_size(target_context->q);
+
+    printf("[original data]\n");
+    show_chain(head);
+
+    printf("[target head]\n");
+    show_list(target_context->q);
+    while (!list_is_singular(head)) {
+        show_chain(head);
+        // find min in second to last chain
+        struct list_head *chain_head = head->next->next;
+        queue_contex_t *chain_context =
+            list_entry(chain_head, queue_contex_t, chain);
+        queue_contex_t *min_context =
+            list_entry(chain_head, queue_contex_t, chain);
+        element_t *min_entry =
+            list_first_entry(chain_context->q, element_t, list);
+        struct list_head *min_chain_head = chain_head;
+        while (chain_head != head) {
+            chain_context = list_entry(chain_head, queue_contex_t, chain);
+            element_t *entry =
+                list_first_entry(chain_context->q, element_t, list);
+            printf("entry = %s\n", entry->value);
+            if (strcmp(entry->value, min_entry->value) <= 0) {
+                min_entry = entry;
+                min_context = list_entry(chain_head, queue_contex_t, chain);
+                min_chain_head = chain_head;
+                printf("remove entry -----> %s\n", min_entry->value);
+            }
+            chain_head = chain_head->next;
+        }
+
+        // remove min_node
+        // check q_context size of min_entry
+        list_del_init(&min_entry->list);
+        min_context->size -= 1;
+        if (min_context->size == 0) {
+            list_del_init(min_chain_head);
+        }
+
+        // insert to queue of target chain
+        struct list_head *node;
+        list_for_each (node, target_context->q) {
+            element_t *entry = list_entry(node, element_t, list);
+            printf("entry value = %s\n", entry->value);
+            if (strcmp(list_entry(node, element_t, list)->value,
+                       min_entry->value) > 0) {
+                printf("inserted node value = %s\n",
+                       list_entry(node, element_t, list)->value);
+                struct list_head temp_head;
+                INIT_LIST_HEAD(&temp_head);
+                list_cut_position(&temp_head, target_context->q, node->prev);
+                list_add_tail(&min_entry->list, &temp_head);
+                list_splice_init(&temp_head, target_context->q);
+
+                printf("[temp_head]\n");
+                show_list(&temp_head);
+                printf("[target head]\n");
+                show_list(target_context->q);
+                break;
+            }
+        }
+    }
+    return q_size(target_context->q);
 }
